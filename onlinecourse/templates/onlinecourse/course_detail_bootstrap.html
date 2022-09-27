@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     {% load static %}
+    {% load static %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -43,12 +43,50 @@
     <div class="container-fluid">
             <h2>{{ course.name }}</h2>
             <div class="card-columns-vertical">
-                {% for lesson in course.lesson_set.all %}
-                    <div class="card mt-1">
-                        <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
-                        <div class="card-body">{{lesson.content}}</div>
-                    </div>
-                {% endfor %}
+                {% if user.is_authenticated %}
+                    {% for lesson in course.lesson_set.all %}
+                        <div class="card mt-1">
+                            <div class="card-header"><h5>Lesson {{lesson.order}}: {{lesson.title}}</h5></div>
+                            <!-- <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div> -->
+                            <div class="card-body">{{lesson.content}}</div>
+                        </div>
+                        <button id="exam"  type="button" class="btn btn-primary" data-toggle="collapse" data-target="#exam">Start Exam</button>   
+                            <div id="exam" class="collapse">
+                                <form id="questionform" action="point to a submit view" method="post">
+                                        {% for question in lesson.question_set.all %}
+                                            <div class="card mt-1">
+                                                <div class="card-header"><h5>{{ question.question_text}}</h5></div>
+                                                {% csrf_token %}
+                                                    <div class="form-group">
+                                            
+                                                        {% for choice in question.choice_set.all %}
+                                                        <div class="form-check">
+                                                            <label class="form-check-label">
+                                                                <input type="checkbox" name="choice_{{choice.id}}" class="form-check-input" id="{{choice.id}}" value="{{choice.id}}">{{ choice.choice_text }}>
+                                                            </label>
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                            </div>
+                                        {% endfor %}
+                        
+                                    <input class="btn btn-success btn-block" type="submit" value="Submit">
+                                </form> 
+                            </div>
+                    {% endfor %}
+                {% else %}
+                    <li>
+                        <form class="form-inline" action="{% url 'onlinecourse:login' %}" method="post">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Username" name="username" >
+                                <input type="password" class="form-control" placeholder="Password" name="psw" >
+                                <button class="btn btn-primary" type="submit">Login</button>
+                                <a class="btn btn-link" href="{% url 'onlinecourse:registration' %}">Sign Up</a>
+                            </div>
+                        </form>
+                    </li>
+                {% endif %}
             </div>
             <!-- Task: show questions and choices -->
             <!-- <HINT> Use Bootstrap Collapse to hide exam first, more details could be found here
@@ -64,24 +102,30 @@
             <!-- <HINT> Each exam will have many questions -->
 
             <!-- <HINT> Each question will have many choices -->
-            <button id="exam"  type="button" class="btn btn-primary" data-toggle="collapse" data-target="#exam">Start Exam</button>
-            {% if user.is_authenticated %}    
-                <div id="exam" class="collapse">
-                       
-            <!-- <HINT> Create a form to collect the selected choices for all questions -->
+
+                 <!--Check here to see more details Bootstrap checkbox
+             https://www.w3schools.com/bootstrap4/bootstrap_forms_inputs.asp-->
+              <!-- <HINT> Create a form to collect the selected choices for all questions -->
             <!-- <HINT> For each question choice, you may create a checkbox input like
             <input type="check" name="choice_{{choice.id}}" id="{{choice.id}}" ...>
             -->
             <!-- A choice submission form example-->
+            
+            <!-- {% if user.is_authenticated %}
+              {% for lesson in course.lesson_set.all %} 
+                <button id="exam"  type="button" class="btn btn-primary" data-toggle="collapse" data-target="#exam">Start Exam</button>   
+                <div id="exam" class="collapse">
+                       
+           
                     <form id="questionform" action="point to a submit view" method="post">
-                        <!-- ... for each question in the course ... -->
-                        {% for lesson in course.lesson_set.all %}
+                        
+                        
                             {% for question in lesson.question_set.all %}
                                 <div class="card mt-1">
                                     <div class="card-header"><h5>{{ question.question_text}}</h5></div>
                                     {% csrf_token %}
                                         <div class="form-group">
-                                            <!-- ... for each choice in the question ... -->
+                                            
                                             {% for choice in question.choice_set.all %}
                                             <div class="form-check">
                                                 <label class="form-check-label">
@@ -92,12 +136,12 @@
                                         </div>
                                 </div>
                             {% endfor %}
-                        {% endfor %}
+                        
                         <input class="btn btn-success btn-block" type="submit" value="Submit">
                     </form> 
                 </div>
-                <!--Check here to see more details Bootstrap checkbox
-             https://www.w3schools.com/bootstrap4/bootstrap_forms_inputs.asp-->
+              {% endfor %}
+               
             {% else %}
             
                 <li>
@@ -111,7 +155,7 @@
                         </div>
                     </form>
                 </li>
-            {% endif %}
+            {% endif %} -->
     </div>
 </body>
 </html>
